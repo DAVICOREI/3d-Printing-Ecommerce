@@ -7,7 +7,7 @@ function MeusPedidos() {
 
   useEffect(() => {
     // Buscando os pedidos do Cliente (ID 1)
-    fetch("http://localhost:8080/api/pedidos/usuario/1")
+    fetch("https://threed-printing-api-fv1h.onrender.com/api/pedidos/usuario/1")
       .then((response) => response.json())
       .then((data) => {
         setPedidos(data);

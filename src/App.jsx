@@ -12,7 +12,7 @@ function App() {
   });
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/produtos")
+    fetch("https://threed-printing-api-fv1h.onrender.com/api/produtos")
       .then((response) => response.json())
       .then((data) => setProdutos(data))
       .catch((error) =>
@@ -59,7 +59,7 @@ function App() {
       })),
     };
 
-    fetch("http://localhost:8080/api/pedidos", {
+    fetch("https://threed-printing-api-fv1h.onrender.com/api/pedidos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(pedidoParaEnviar),
