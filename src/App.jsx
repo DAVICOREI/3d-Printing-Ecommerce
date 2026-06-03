@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import MeusPedidos from "./pages/MeusPedidos";
 import Admin from "./pages/Admin";
 import "./App.css";
+import Login from "./pages/Login";
+import ProtectedRoute from "./ProtectedRoute"; // ou "./components/ProtectedRoute"
 
 function App() {
   const [produtos, setProdutos] = useState([]);
@@ -153,7 +155,17 @@ function App() {
       <Routes>
         <Route path="/" element={<Vitrine />} />
         <Route path="/pedidos" element={<MeusPedidos />} />
-        <Route path="/admin" element={<Admin />} />
+        <Route path="/login" element={<Login />} />
+
+        {/* A rota admin agora está TRANCADA dentro do ProtectedRoute */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <Admin />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
