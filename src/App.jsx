@@ -43,39 +43,41 @@ function App() {
     0,
   );
 
-  const finalizarCompra = () => {
+  const finalizarCompra = async () => {
     if (carrinho.length === 0) {
       alert("Seu carrinho está vazio!");
       return;
     }
 
-    const pedidoParaEnviar = {
-      usuarioId: 1,
-      total: valorTotal,
-      itens: carrinho.map((item) => ({
-        produto: { id: item.id },
-        quantidade: item.quantidade,
-        precoUnitario: item.precoVenda,
-      })),
-    };
+    try {
+      // 1. Avisa o Java para gerar o link de pagamento do Mercado Pago
+      const response = await fetch(
+        "https://threed-printing-api-fv1h.onrender.com/api/checkout/pagar",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          // Nota: Futuramente enviaremos o 'carrinho' aqui no body para calcular o valor dinâmico.
+          // Por enquanto, o Java vai gerar aquele link de teste de R$ 150,00 que configuramos.
+        },
+      );
 
-    fetch("https://threed-printing-api-fv1h.onrender.com/api/pedidos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(pedidoParaEnviar),
-    })
-      .then((response) => {
-        if (response.ok) {
-          alert(
-            "🎉 Pedido finalizado com sucesso! Indo para a fila de impressão 3D.",
-          );
-          setCarrinho([]);
-          localStorage.removeItem("carrinhoEcommerce");
-        } else {
-          alert("Erro ao processar o pedido. Tente novamente.");
-        }
-      })
-      .catch((error) => console.error("Erro:", error));
+      const data = await response.json();
+
+      // 2. Se o Java devolver a URL oficial do Mercado Pago...
+      if (data.url) {
+        // Limpa o carrinho local pois o cliente já vai para o pagamento
+        setCarrinho([]);
+        localStorage.removeItem("carrinhoEcommerce");
+
+        // 3. A MÁGICA: Redireciona a aba do cliente para o ambiente seguro do Mercado Pago!
+        window.location.href = data.url;
+      } else {
+        alert("Erro ao gerar link de pagamento no Mercado Pago.");
+      }
+    } catch (error) {
+      console.error("Erro ao conectar com a API de Checkout:", error);
+      alert("Servidor de pagamentos indisponível no momento.");
+    }
   };
 
   // O componente interno que representa a Vitrine
