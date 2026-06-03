@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 // Importando as ferramentas de rota
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import MeusPedidos from "./pages/MeusPedidos";
+import Admin from "./pages/Admin";
 import "./App.css";
 
 function App() {
@@ -152,6 +153,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Vitrine />} />
         <Route path="/pedidos" element={<MeusPedidos />} />
+        <Route path="/admin" element={<Admin />} />
       </Routes>
     </BrowserRouter>
   );
