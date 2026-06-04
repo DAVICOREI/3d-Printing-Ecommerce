@@ -112,14 +112,98 @@ function App() {
         <h1>Loja de Decoração 3D</h1>
         <p>Peças exclusivas fabricadas sob demanda</p>
 
-        <div className="resumo-carrinho">
-          <span>
-            🛒 Itens: {carrinho.reduce((acc, item) => acc + item.quantidade, 0)}{" "}
-            | Total: R$ {valorTotal.toFixed(2)}
-          </span>
-          <button className="btn-finalizar" onClick={finalizarCompra}>
-            Finalizar Compra
-          </button>
+        <div
+          className="resumo-carrinho"
+          style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              backgroundColor: "#222",
+              padding: "15px",
+              borderRadius: "8px",
+            }}
+          >
+            <span style={{ fontSize: "18px", fontWeight: "bold" }}>
+              🛒 Itens:{" "}
+              {carrinho.reduce((acc, item) => acc + item.quantidade, 0)} |
+              Total: R$ {valorTotal.toFixed(2)}
+            </span>
+            <button className="btn-finalizar" onClick={finalizarCompra}>
+              Finalizar Compra
+            </button>
+          </div>
+
+          {/* --- NOVA LISTA VISUAL DO CARRINHO --- */}
+          {carrinho.length > 0 && (
+            <div
+              style={{
+                backgroundColor: "#1e1e1e",
+                padding: "15px",
+                borderRadius: "8px",
+                textAlign: "left",
+                border: "1px solid #333",
+              }}
+            >
+              <h3
+                style={{
+                  margin: "0 0 10px 0",
+                  paddingBottom: "5px",
+                  borderBottom: "1px solid #444",
+                }}
+              >
+                Seu Pedido:
+              </h3>
+
+              {carrinho.map((item) => (
+                <div
+                  key={item.cartItemId}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    borderBottom: "1px dashed #333",
+                    padding: "10px 0",
+                  }}
+                >
+                  <div>
+                    <p style={{ fontWeight: "bold", margin: "0" }}>
+                      {item.nome}
+                    </p>
+                    <p
+                      style={{
+                        fontSize: "12px",
+                        color: "#aaa",
+                        margin: "2px 0",
+                      }}
+                    >
+                      🛠️ Material:{" "}
+                      <span style={{ color: "#fff" }}>
+                        {item.materialEscolhido}
+                      </span>
+                    </p>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <p style={{ margin: "0", fontSize: "14px" }}>
+                      {item.quantidade}x R$ {item.precoVenda.toFixed(2)}
+                    </p>
+                    <p
+                      style={{
+                        margin: "0",
+                        fontWeight: "bold",
+                        color: "#4caf50",
+                      }}
+                    >
+                      R$ {(item.precoVenda * item.quantidade).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* -------------------------------------- */}
         </div>
 
         {/* Link de navegação para a nova tela */}
