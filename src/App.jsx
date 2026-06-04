@@ -9,7 +9,11 @@ import ProtectedRoute from "./Components/ProtectedRoute"; // ou "./components/Pr
 
 function App() {
   const isAdmin = localStorage.getItem("tokenAdmin") !== null;
-
+  // Guarda qual material o cliente escolheu para cada produto
+  const [materialSelecionado, setMaterialSelecionado] = useState({});
+  const handleMaterialChange = (produtoId, material) => {
+    setMaterialSelecionado({ ...materialSelecionado, [produtoId]: material });
+  };
   const [produtos, setProdutos] = useState([]);
   const [carrinho, setCarrinho] = useState(() => {
     const carrinhoSalvo = localStorage.getItem("carrinhoEcommerce");
@@ -30,16 +34,32 @@ function App() {
   }, [carrinho]);
 
   const adicionarAoCarrinho = (produto) => {
-    const itemExistente = carrinho.find((item) => item.id === produto.id);
+    // 1. Pega a lista de materiais que vieram do banco (ex: "PLA, PETG") e transforma em uma lista (Array)
+    const opcoesMaterial = produto.material.split(",").map((m) => m.trim());
+
+    // 2. Descobre qual material o cliente escolheu. Se não mexeu, pega o primeiro da lista por padrão
+    const escolhido = materialSelecionado[produto.id] || opcoesMaterial[0];
+
+    // 3. Cria um ID único para o carrinho (ex: "1-PLA")
+    const cartItemId = `${produto.id}-${escolhido}`;
+
+    const itemExistente = carrinho.find(
+      (item) => item.cartItemId === cartItemId,
+    );
+
     if (itemExistente) {
       const carrinhoAtualizado = carrinho.map((item) =>
-        item.id === produto.id
+        item.cartItemId === cartItemId
           ? { ...item, quantidade: item.quantidade + 1 }
           : item,
       );
       setCarrinho(carrinhoAtualizado);
     } else {
-      setCarrinho([...carrinho, { ...produto, quantidade: 1 }]);
+      // Adiciona o produto no carrinho junto com a etiqueta do material exato que foi escolhido
+      setCarrinho([
+        ...carrinho,
+        { ...produto, cartItemId, materialEscolhido: escolhido, quantidade: 1 },
+      ]);
     }
   };
 
@@ -126,9 +146,52 @@ function App() {
               )}
               <h2>{produto.nome}</h2>
               <p className="descricao">{produto.descricao}</p>
-              <div className="detalhes-tecnicos">
-                <span>🛠️ {produto.material}</span>
-                <span>⏱️ {produto.tempoImpressaoHoras}h</span>
+              <div
+                className="detalhes-tecnicos"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                  margin: "10px 0",
+                }}
+              >
+                {/* Menu interativo de seleção de materiais */}
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    fontSize: "14px",
+                  }}
+                >
+                  <span>🛠️ Material:</span>
+                  <select
+                    value={
+                      materialSelecionado[produto.id] ||
+                      produto.material.split(",")[0].trim()
+                    }
+                    onChange={(e) =>
+                      handleMaterialChange(produto.id, e.target.value)
+                    }
+                    style={{
+                      padding: "5px",
+                      borderRadius: "5px",
+                      backgroundColor: "#333",
+                      color: "#fff",
+                      border: "1px solid #555",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {/* Pega a string "PLA, PETG", corta nas vírgulas e cria uma <option> para cada */}
+                    {produto.material.split(",").map((mat, index) => (
+                      <option key={index} value={mat.trim()}>
+                        {mat.trim()}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <span>⏱️ {produto.tempoImpressaoHoras}h de impressão</span>
               </div>
               <h3 className="preco">R$ {produto.precoVenda.toFixed(2)}</h3>
               {isAdmin && (

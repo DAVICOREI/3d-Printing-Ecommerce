@@ -5,9 +5,9 @@ function Admin() {
   const [produto, setProduto] = useState({
     nome: "",
     descricao: "",
-    material: "PLA",
+    material: [], // <-- Agora é uma lista (Array) vazia
     tempoImpressaoHoras: "",
-    pesoGramas: "", // Substituímos o custo bruto pelo peso em gramas
+    pesoGramas: "",
     precoVenda: "",
     urlImagem: "",
   });
@@ -15,6 +15,20 @@ function Admin() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProduto({ ...produto, [name]: value });
+  };
+
+  // Função para gerenciar os checkboxes de material
+  const handleCheckboxChange = (e) => {
+    const { value, checked } = e.target;
+    let novosMateriais = [...produto.material];
+
+    if (checked) {
+      novosMateriais.push(value); // Adiciona na lista se marcou
+    } else {
+      novosMateriais = novosMateriais.filter((mat) => mat !== value); // Tira da lista se desmarcou
+    }
+
+    setProduto({ ...produto, material: novosMateriais });
   };
 
   // --- REGRA DE NEGÓCIO DA IMPRESSÃO 3D ---
@@ -49,11 +63,11 @@ function Admin() {
           body: JSON.stringify({
             nome: produto.nome,
             descricao: produto.descricao,
-            material: produto.material,
+            // Transforma a lista ["PLA", "ABS"] no texto "PLA, ABS" para o Java
+            material: produto.material.join(", "),
             tempoImpressaoHoras: Number(produto.tempoImpressaoHoras),
             precoVenda: Number(produto.precoVenda),
             urlImagem: produto.urlImagem,
-            // Agora enviamos o custo total (Material + Tempo) para o banco de dados
             custoProducao: Number(custoProducaoCalculado.toFixed(2)),
           }),
         },
@@ -61,10 +75,11 @@ function Admin() {
 
       if (response.ok) {
         alert("🎉 Produto cadastrado com sucesso!");
+        // Limpa o formulário garantindo que o material volte a ser uma lista vazia
         setProduto({
           nome: "",
           descricao: "",
-          material: "PLA",
+          material: [],
           tempoImpressaoHoras: "",
           pesoGramas: "",
           precoVenda: "",
@@ -118,16 +133,45 @@ function Admin() {
 
         <div style={{ display: "flex", gap: "10px" }}>
           <label style={{ flex: 1 }}>
-            Material:
-            <select
-              name="material"
-              value={produto.material}
-              onChange={handleChange}
+            Materiais Disponíveis:
+            <div
+              style={{
+                display: "flex",
+                gap: "15px",
+                marginTop: "8px",
+                backgroundColor: "#2a2a2a",
+                padding: "10px",
+                borderRadius: "5px",
+              }}
             >
-              <option value="PLA">PLA (R$ 130/kg)</option>
-              <option value="ABS">ABS</option>
-              <option value="PETG">PETG</option>
-            </select>
+              <label style={{ fontWeight: "normal", cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  value="PLA"
+                  checked={produto.material.includes("PLA")}
+                  onChange={handleCheckboxChange}
+                />{" "}
+                PLA
+              </label>
+              <label style={{ fontWeight: "normal", cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  value="ABS"
+                  checked={produto.material.includes("ABS")}
+                  onChange={handleCheckboxChange}
+                />{" "}
+                ABS
+              </label>
+              <label style={{ fontWeight: "normal", cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  value="PETG"
+                  checked={produto.material.includes("PETG")}
+                  onChange={handleCheckboxChange}
+                />{" "}
+                PETG
+              </label>
+            </div>
           </label>
 
           <label style={{ flex: 1 }}>
