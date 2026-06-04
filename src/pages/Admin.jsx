@@ -27,6 +27,8 @@ function Admin() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            // Pega o token real salvo no navegador e coloca no formato padrão de mercado (Bearer)
+            Authorization: `Bearer ${localStorage.getItem("tokenAdmin")}`,
           },
           body: JSON.stringify({
             ...produto,
