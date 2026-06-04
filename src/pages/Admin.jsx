@@ -18,11 +18,21 @@ function Admin() {
   };
 
   // --- REGRA DE NEGÓCIO DA IMPRESSÃO 3D ---
-  // Carretel de PLA padrão = R$ 130.00 por 1kg (1000g) -> R$ 0.13 por grama
+
+  // 1. Custo do Material (PLA a R$ 130/kg)
   const precoPorGrama = 130 / 1000;
-  const custoMaterialCalculado = Number(produto.pesoGramas) * precoPorGrama;
+  const custoMaterial = Number(produto.pesoGramas) * precoPorGrama;
+
+  // 2. Custo de Tempo de Máquina (Energia + Desgaste = ~R$ 1.50/hora)
+  const custoPorHora = 1.5;
+  const custoTempo = Number(produto.tempoImpressaoHoras) * custoPorHora;
+
+  // 3. Custo Total de Produção
+  const custoProducaoCalculado = custoMaterial + custoTempo;
+
+  // 4. Margem de Lucro
   const lucroEstimadoCalculado =
-    Number(produto.precoVenda) - custoMaterialCalculado;
+    Number(produto.precoVenda) - custoProducaoCalculado;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,14 +53,14 @@ function Admin() {
             tempoImpressaoHoras: Number(produto.tempoImpressaoHoras),
             precoVenda: Number(produto.precoVenda),
             urlImagem: produto.urlImagem,
-            // Enviamos o custo calculado automaticamente pela regra de negócio
-            custoProducao: Number(custoMaterialCalculado.toFixed(2)),
+            // Agora enviamos o custo total (Material + Tempo) para o banco de dados
+            custoProducao: Number(custoProducaoCalculado.toFixed(2)),
           }),
         },
       );
 
       if (response.ok) {
-        alert("🎉 Produto cadastrado com sucesso com cálculo automatizado!");
+        alert("🎉 Produto cadastrado com sucesso!");
         setProduto({
           nome: "",
           descricao: "",
@@ -61,11 +71,10 @@ function Admin() {
           urlImagem: "",
         });
       } else {
-        alert("Erro ao cadastrar o produto. Verifique os dados.");
+        alert("Erro ao cadastrar o produto.");
       }
     } catch (error) {
-      console.error("Erro ao conectar com a API:", error);
-      alert("Não foi possível conectar ao servidor.");
+      console.error("Erro na API:", error);
     }
   };
 
@@ -159,8 +168,8 @@ function Admin() {
           </label>
         </div>
 
-        {/* --- PAINEL DE FEEDBACK EM TEMPO REAL --- */}
-        {produto.pesoGramas && (
+        {/* --- PAINEL DE FEEDBACK FINANCEIRO --- */}
+        {(produto.pesoGramas || produto.tempoImpressaoHoras) && (
           <div
             style={{
               backgroundColor: "#1e1e1e",
@@ -170,24 +179,51 @@ function Admin() {
             }}
           >
             <h4 style={{ margin: "0 0 10px 0", color: "#ff9800" }}>
-              📊 Projeção Financeira (PLA)
+              📊 Projeção de Custos
             </h4>
-            <p style={{ margin: "5px 0" }}>
-              ⚡ Custo do Material:{" "}
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "14px",
+                color: "#aaa",
+              }}
+            >
+              <p style={{ margin: "2px 0" }}>
+                Filamento ({produto.pesoGramas || 0}g):
+              </p>
+              <p style={{ margin: "2px 0" }}>R$ {custoMaterial.toFixed(2)}</p>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "14px",
+                color: "#aaa",
+              }}
+            >
+              <p style={{ margin: "2px 0" }}>
+                Máquina ({produto.tempoImpressaoHoras || 0}h):
+              </p>
+              <p style={{ margin: "2px 0" }}>R$ {custoTempo.toFixed(2)}</p>
+            </div>
+
+            <hr style={{ borderColor: "#333", margin: "10px 0" }} />
+
+            <p style={{ margin: "5px 0", fontSize: "16px" }}>
+              ⚡ Custo Total de Produção:{" "}
               <strong style={{ color: "#f44336" }}>
-                R$ {custoMaterialCalculado.toFixed(2)}
+                R$ {custoProducaoCalculado.toFixed(2)}
               </strong>
             </p>
+
             {produto.precoVenda && (
-              <p style={{ margin: "5px 0" }}>
-                💰 Lucro Estimado:{" "}
+              <p style={{ margin: "5px 0", fontSize: "16px" }}>
+                💰 Lucro Líquido:{" "}
                 <strong style={{ color: "#4caf50" }}>
-                  R$ {lucroEstimadoCalculado.toFixed(2)} (
-                  {(
-                    (lucroEstimadoCalculado / Number(produto.precoVenda)) *
-                    100
-                  ).toFixed(0)}
-                  %)
+                  R$ {lucroEstimadoCalculado.toFixed(2)}
                 </strong>
               </p>
             )}
