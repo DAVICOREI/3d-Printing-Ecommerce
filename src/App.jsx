@@ -8,6 +8,8 @@ import Login from "./pages/Login";
 import ProtectedRoute from "./Components/ProtectedRoute"; // ou "./components/ProtectedRoute"
 
 function App() {
+  const isAdmin = localStorage.getItem("tokenAdmin") !== null;
+
   const [produtos, setProdutos] = useState([]);
   const [carrinho, setCarrinho] = useState(() => {
     const carrinhoSalvo = localStorage.getItem("carrinhoEcommerce");
@@ -130,12 +132,14 @@ function App() {
               </div>
               <h3 className="preco">R$ {produto.precoVenda.toFixed(2)}</h3>
               /* Painel de Lucro (Visão do Admin) */
-              <div className="painel-admin">
-                <p>💰 Lucro: R$ {produto.lucroEstimado.toFixed(2)}</p>
-                <small>
-                  (Custo mat: R$ {produto.custoProducao.toFixed(2)})
-                </small>
-              </div>
+              {isAdmin && (
+                <div className="painel-admin">
+                  <p>💰 Lucro: R$ {produto.lucroEstimado.toFixed(2)}</p>
+                  <small>
+                    (Custo mat: R$ {produto.custoProducao.toFixed(2)})
+                  </small>
+                </div>
+              )}
               <button
                 className="btn-comprar"
                 onClick={() => adicionarAoCarrinho(produto)}
