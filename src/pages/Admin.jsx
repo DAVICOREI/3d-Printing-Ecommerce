@@ -7,7 +7,7 @@ function Admin() {
     descricao: "",
     material: "PLA",
     tempoImpressaoHoras: "",
-    custoProducao: "",
+    pesoGramas: "", // Substituímos o custo bruto pelo peso em gramas
     precoVenda: "",
     urlImagem: "",
   });
@@ -16,6 +16,13 @@ function Admin() {
     const { name, value } = e.target;
     setProduto({ ...produto, [name]: value });
   };
+
+  // --- REGRA DE NEGÓCIO DA IMPRESSÃO 3D ---
+  // Carretel de PLA padrão = R$ 130.00 por 1kg (1000g) -> R$ 0.13 por grama
+  const precoPorGrama = 130 / 1000;
+  const custoMaterialCalculado = Number(produto.pesoGramas) * precoPorGrama;
+  const lucroEstimadoCalculado =
+    Number(produto.precoVenda) - custoMaterialCalculado;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,27 +34,29 @@ function Admin() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            // Pega o token real salvo no navegador e coloca no formato padrão de mercado (Bearer)
             Authorization: `Bearer ${localStorage.getItem("tokenAdmin")}`,
           },
           body: JSON.stringify({
-            ...produto,
+            nome: produto.nome,
+            descricao: produto.descricao,
+            material: produto.material,
             tempoImpressaoHoras: Number(produto.tempoImpressaoHoras),
-            custoProducao: Number(produto.custoProducao),
             precoVenda: Number(produto.precoVenda),
+            urlImagem: produto.urlImagem,
+            // Enviamos o custo calculado automaticamente pela regra de negócio
+            custoProducao: Number(custoMaterialCalculado.toFixed(2)),
           }),
         },
       );
 
       if (response.ok) {
-        alert("🎉 Produto cadastrado com sucesso no banco de dados!");
-        // Limpa o formulário
+        alert("🎉 Produto cadastrado com sucesso com cálculo automatizado!");
         setProduto({
           nome: "",
           descricao: "",
           material: "PLA",
           tempoImpressaoHoras: "",
-          custoProducao: "",
+          pesoGramas: "",
           precoVenda: "",
           urlImagem: "",
         });
@@ -70,7 +79,7 @@ function Admin() {
           ← Voltar para a Vitrine
         </Link>
         <h1 style={{ marginTop: "10px" }}>Painel do Administrador</h1>
-        <p>Cadastre novos modelos e impressões 3D</p>
+        <p>Cadastre novos modelos com cálculo automático de custo</p>
       </header>
 
       <form
@@ -106,10 +115,9 @@ function Admin() {
               value={produto.material}
               onChange={handleChange}
             >
-              <option value="PLA">PLA</option>
+              <option value="PLA">PLA (R$ 130/kg)</option>
               <option value="ABS">ABS</option>
               <option value="PETG">PETG</option>
-              <option value="Resina">Resina</option>
             </select>
           </label>
 
@@ -127,13 +135,13 @@ function Admin() {
 
         <div style={{ display: "flex", gap: "10px" }}>
           <label style={{ flex: 1 }}>
-            Custo de Produção (R$):
+            Peso da Peça (Gramas):
             <input
               type="number"
-              step="0.01"
-              name="custoProducao"
-              value={produto.custoProducao}
+              name="pesoGramas"
+              value={produto.pesoGramas}
               onChange={handleChange}
+              placeholder="ex: 250"
               required
             />
           </label>
@@ -150,6 +158,41 @@ function Admin() {
             />
           </label>
         </div>
+
+        {/* --- PAINEL DE FEEDBACK EM TEMPO REAL --- */}
+        {produto.pesoGramas && (
+          <div
+            style={{
+              backgroundColor: "#1e1e1e",
+              padding: "15px",
+              borderRadius: "8px",
+              border: "1px dashed #ff9800",
+            }}
+          >
+            <h4 style={{ margin: "0 0 10px 0", color: "#ff9800" }}>
+              📊 Projeção Financeira (PLA)
+            </h4>
+            <p style={{ margin: "5px 0" }}>
+              ⚡ Custo do Material:{" "}
+              <strong style={{ color: "#f44336" }}>
+                R$ {custoMaterialCalculado.toFixed(2)}
+              </strong>
+            </p>
+            {produto.precoVenda && (
+              <p style={{ margin: "5px 0" }}>
+                💰 Lucro Estimado:{" "}
+                <strong style={{ color: "#4caf50" }}>
+                  R$ {lucroEstimadoCalculado.toFixed(2)} (
+                  {(
+                    (lucroEstimadoCalculado / Number(produto.precoVenda)) *
+                    100
+                  ).toFixed(0)}
+                  %)
+                </strong>
+              </p>
+            )}
+          </div>
+        )}
 
         <label>
           URL da Imagem:
