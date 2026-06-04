@@ -6,16 +6,38 @@ function Login() {
   const [senha, setSenha] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    // TEMPORÁRIO: Simulando o login até conectarmos com o Java
-    if (email === "admin@loja3d.com" && senha === "123456") {
-      // Guarda um "passe de entrada" no navegador
-      localStorage.setItem("tokenAdmin", "meu-token-secreto");
-      navigate("/admin"); // Joga o usuário para o painel
-    } else {
-      alert("Credenciais incorretas!");
+    try {
+      // Faz a requisição POST para o Java pedindo o Token
+      const response = await fetch(
+        "https://threed-printing-api-fv1h.onrender.com/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, senha }), // Envia os dados digitados
+        },
+      );
+
+      if (response.ok) {
+        // Se o Java aprovar, pegamos o Token que ele devolveu
+        const data = await response.json();
+
+        // Guardamos o Token REAL e criptografado no navegador
+        localStorage.setItem("tokenAdmin", data.token);
+
+        // Redireciona o Administrador para o painel
+        navigate("/admin");
+      } else {
+        // Se o Java negar (Erro 401), avisamos na tela
+        alert("Credenciais incorretas! Acesso negado pelo servidor.");
+      }
+    } catch (error) {
+      console.error("Erro ao conectar com a API de login:", error);
+      alert("Servidor indisponível no momento.");
     }
   };
 
