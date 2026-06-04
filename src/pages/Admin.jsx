@@ -1,7 +1,15 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Admin() {
+  const navigate = useNavigate(); // <-- Inicializa o hook de navegação
+
+  // Função que apaga o token e chuta o usuário para a vitrine
+  const handleLogout = () => {
+    localStorage.removeItem("tokenAdmin");
+    navigate("/");
+  };
+
   const [produto, setProduto] = useState({
     nome: "",
     descricao: "",
@@ -99,10 +107,34 @@ function Admin() {
       style={{ padding: "20px", maxWidth: "600px", margin: "0 auto" }}
     >
       <header style={{ marginBottom: "20px" }}>
-        <Link to="/" style={{ color: "#fff", textDecoration: "none" }}>
-          ← Voltar para a Vitrine
-        </Link>
-        <h1 style={{ marginTop: "10px" }}>Painel do Administrador</h1>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Link to="/" style={{ color: "#fff", textDecoration: "none" }}>
+            ← Voltar para a Vitrine
+          </Link>
+
+          {/* Botão de Logout */}
+          <button
+            onClick={handleLogout}
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid #f44336",
+              color: "#f44336",
+              padding: "5px 15px",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            Sair 🔒
+          </button>
+        </div>
+
+        <h1 style={{ marginTop: "15px" }}>Painel do Administrador</h1>
         <p>Cadastre novos modelos com cálculo automático de custo</p>
       </header>
 
