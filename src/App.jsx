@@ -63,6 +63,15 @@ function App() {
     }
   };
 
+  // Função para o cliente remover um item do carrinho
+  const removerDoCarrinho = (cartItemId) => {
+    // Mantém no carrinho apenas os itens que tem o ID diferente do que foi clicado
+    const carrinhoAtualizado = carrinho.filter(
+      (item) => item.cartItemId !== cartItemId,
+    );
+    setCarrinho(carrinhoAtualizado);
+  };
+
   // Função exclusiva do Admin para deletar um produto
   const deletarProduto = async (id) => {
     // Confirmação de segurança para evitar cliques acidentais
@@ -198,9 +207,11 @@ function App() {
                     alignItems: "center",
                     borderBottom: "1px dashed #333",
                     padding: "10px 0",
+                    gap: "15px",
                   }}
                 >
-                  <div>
+                  {/* Lado Esquerdo: Nome e Material */}
+                  <div style={{ flex: 1 }}>
                     <p style={{ fontWeight: "bold", margin: "0" }}>
                       {item.nome}
                     </p>
@@ -217,19 +228,46 @@ function App() {
                       </span>
                     </p>
                   </div>
-                  <div style={{ textAlign: "right" }}>
-                    <p style={{ margin: "0", fontSize: "14px" }}>
-                      {item.quantidade}x R$ {item.precoVenda.toFixed(2)}
-                    </p>
-                    <p
+
+                  {/* Lado Direito: Valores e Botão de Remover */}
+                  <div
+                    style={{
+                      textAlign: "right",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "15px",
+                    }}
+                  >
+                    <div>
+                      <p style={{ margin: "0", fontSize: "14px" }}>
+                        {item.quantidade}x R$ {item.precoVenda.toFixed(2)}
+                      </p>
+                      <p
+                        style={{
+                          margin: "0",
+                          fontWeight: "bold",
+                          color: "#4caf50",
+                        }}
+                      >
+                        R$ {(item.precoVenda * item.quantidade).toFixed(2)}
+                      </p>
+                    </div>
+
+                    {/* Botão da Lixeira */}
+                    <button
+                      onClick={() => removerDoCarrinho(item.cartItemId)}
                       style={{
-                        margin: "0",
-                        fontWeight: "bold",
-                        color: "#4caf50",
+                        backgroundColor: "transparent",
+                        border: "none",
+                        color: "#f44336",
+                        cursor: "pointer",
+                        fontSize: "18px",
+                        padding: "5px",
                       }}
+                      title="Remover do carrinho"
                     >
-                      R$ {(item.precoVenda * item.quantidade).toFixed(2)}
-                    </p>
+                      🗑️
+                    </button>
                   </div>
                 </div>
               ))}
