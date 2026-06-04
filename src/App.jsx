@@ -5,7 +5,7 @@ import MeusPedidos from "./pages/MeusPedidos";
 import Admin from "./pages/Admin";
 import "./App.css";
 import Login from "./pages/Login";
-import ProtectedRoute from "./ProtectedRoute"; // ou "./components/ProtectedRoute"
+import ProtectedRoute from "./Components/ProtectedRoute"; // ou "./components/ProtectedRoute"
 
 function App() {
   const [produtos, setProdutos] = useState([]);
