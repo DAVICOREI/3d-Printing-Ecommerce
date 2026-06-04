@@ -131,8 +131,8 @@ function App() {
                 <span>⏱️ {produto.tempoImpressaoHoras}h</span>
               </div>
               <h3 className="preco">R$ {produto.precoVenda.toFixed(2)}</h3>
-              /* Painel de Lucro (Visão do Admin) */
               {isAdmin && (
+                /* Painel de Lucro (Visão do Admin) */
                 <div className="painel-admin">
                   <p>💰 Lucro: R$ {produto.lucroEstimado.toFixed(2)}</p>
                   <small>
