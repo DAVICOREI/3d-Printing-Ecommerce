@@ -63,6 +63,38 @@ function App() {
     }
   };
 
+  // Função exclusiva do Admin para deletar um produto
+  const deletarProduto = async (id) => {
+    // Confirmação de segurança para evitar cliques acidentais
+    if (
+      !window.confirm("🚨 Tem certeza que deseja deletar este modelo da loja?")
+    )
+      return;
+
+    try {
+      const response = await fetch(
+        `https://threed-printing-api-fv1h.onrender.com/api/produtos/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("tokenAdmin")}`,
+          },
+        },
+      );
+
+      if (response.ok) {
+        // Atualiza a tela instantaneamente removendo o produto deletado
+        setProdutos(produtos.filter((produto) => produto.id !== id));
+        alert("Produto removido com sucesso!");
+      } else {
+        alert("Erro ao deletar. O seu token pode estar expirado.");
+      }
+    } catch (error) {
+      console.error("Erro ao deletar o produto:", error);
+      alert("Erro de conexão com o servidor.");
+    }
+  };
+
   const valorTotal = carrinho.reduce(
     (total, item) => total + item.precoVenda * item.quantidade,
     0,
@@ -279,12 +311,40 @@ function App() {
               </div>
               <h3 className="preco">R$ {produto.precoVenda.toFixed(2)}</h3>
               {isAdmin && (
-                /* Painel de Lucro (Visão do Admin) */
-                <div className="painel-admin">
-                  <p>💰 Lucro: R$ {produto.lucroEstimado.toFixed(2)}</p>
-                  <small>
+                /* Painel de Lucro e Controles (Visão do Admin) */
+                <div
+                  className="painel-admin"
+                  style={{
+                    backgroundColor: "#2a2a2a",
+                    padding: "10px",
+                    marginTop: "10px",
+                    borderRadius: "5px",
+                    border: "1px dashed #ff9800",
+                  }}
+                >
+                  <p style={{ margin: "0" }}>
+                    💰 Lucro: R$ {produto.lucroEstimado.toFixed(2)}
+                  </p>
+                  <small style={{ color: "#aaa" }}>
                     (Custo mat: R$ {produto.custoProducao.toFixed(2)})
                   </small>
+
+                  {/* --- BOTÃO DE DELETAR --- */}
+                  <button
+                    onClick={() => deletarProduto(produto.id)}
+                    style={{
+                      width: "100%",
+                      marginTop: "10px",
+                      backgroundColor: "transparent",
+                      border: "1px solid #f44336",
+                      color: "#f44336",
+                      padding: "5px",
+                      cursor: "pointer",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    🗑️ Deletar Modelo
+                  </button>
                 </div>
               )}
               <button
