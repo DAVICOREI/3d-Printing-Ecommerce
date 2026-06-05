@@ -1,8 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 function Admin() {
   const navigate = useNavigate(); // <-- Inicializa o hook de navegação
+
+  const [pedidosFila, setPedidosFila] = useState([]);
+
+  useEffect(() => {
+    const buscarFila = async () => {
+      try {
+        const response = await fetch(
+          "https://threed-printing-api-fv1h.onrender.com/api/pedidos/admin",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("tokenAdmin")}`,
+            },
+          },
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setPedidosFila(data);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar fila de encomendas:", error);
+      }
+    };
+
+    buscarFila();
+  }, []);
 
   // Função que apaga o token e chuta o usuário para a vitrine
   const handleLogout = () => {
@@ -325,6 +350,110 @@ function Admin() {
           Salvar Produto na Nuvem
         </button>
       </form>
+
+      {/* --- SEÇÃO: FILA DE ESPERA DE ENCOMENDAS --- */}
+      <section
+        style={{
+          marginTop: "40px",
+          backgroundColor: "#1a1a1a",
+          padding: "20px",
+          borderRadius: "10px",
+          border: "1px solid #333",
+        }}
+      >
+        <h2 style={{ color: "#ff9800", marginBottom: "15px" }}>
+          🏭 Fila de Espera da Fábrica 3D
+        </h2>
+
+        {pedidosFila.length === 0 ? (
+          <p style={{ color: "#aaa" }}>
+            Nenhuma encomenda pendente no momento.
+          </p>
+        ) : (
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "15px" }}
+          >
+            {pedidosFila.map((pedido, index) => (
+              <div
+                key={pedido.id}
+                style={{
+                  backgroundColor: "#222",
+                  padding: "15px",
+                  borderRadius: "6px",
+                  borderLeft: "5px solid #ff9800",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "10px",
+                  }}
+                >
+                  <strong>
+                    # Posição na Fila: {index + 1} (Pedido ID: {pedido.id})
+                  </strong>
+                  <span
+                    style={{
+                      backgroundColor:
+                        pedido.status === "PENDENTE" ? "#ff9800" : "#4caf50",
+                      color: "#000",
+                      padding: "3px 8px",
+                      borderRadius: "3px",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {pedido.status}
+                  </span>
+                </div>
+
+                <p style={{ margin: "5px 0", fontSize: "14px", color: "#aaa" }}>
+                  📅 Data da Compra:{" "}
+                  <strong>
+                    {new Date(pedido.dataPedido).toLocaleString("pt-BR")}
+                  </strong>
+                </p>
+
+                <p style={{ margin: "5px 0", fontSize: "14px", color: "#aaa" }}>
+                  💰 Valor Total:{" "}
+                  <strong>
+                    R$ {pedido.total ? pedido.total.toFixed(2) : "0.00"}
+                  </strong>
+                </p>
+
+                <div
+                  style={{
+                    marginTop: "10px",
+                    backgroundColor: "#111",
+                    padding: "10px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  <span style={{ fontSize: "13px", color: "#888" }}>
+                    Peças a serem fabricadas:
+                  </span>
+                  {pedido.itens?.map((item, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        fontSize: "14px",
+                        marginTop: "5px",
+                      }}
+                    >
+                      <span>• {item.produto?.nome || "Produto Deletado"}</span>
+                      <span>Qtd: {item.quantidade}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
