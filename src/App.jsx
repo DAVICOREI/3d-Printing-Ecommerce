@@ -116,15 +116,13 @@ function App() {
     }
 
     try {
-      // 1. Empacota os dados exatamente no formato que a classe Pedido.java espera receber
+      // 1. Empacota os dados EXATAMENTE como as classes Pedido.java e ItemPedido.java exigem
       const pacotePedido = {
         total: valorTotal,
         itens: carrinho.map((item) => ({
-          // Como não temos a classe ItemPedido.java aqui, envie os dados básicos para salvar no banco
           produto: { id: item.id },
           quantidade: item.quantidade,
-          preco: item.precoVenda,
-          material: item.materialEscolhido,
+          precoUnitario: item.precoVenda, // <-- NOME CORRIGIDO AQUI!
         })),
       };
 
