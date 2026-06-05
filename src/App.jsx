@@ -116,26 +116,38 @@ function App() {
     }
 
     try {
-      // 1. Avisa o Java para gerar o link de pagamento do Mercado Pago
+      // 1. Empacota os dados exatamente no formato que a classe Pedido.java espera receber
+      const pacotePedido = {
+        total: valorTotal,
+        itens: carrinho.map((item) => ({
+          // Como não temos a classe ItemPedido.java aqui, envie os dados básicos para salvar no banco
+          produto: { id: item.id },
+          quantidade: item.quantidade,
+          preco: item.precoVenda,
+          material: item.materialEscolhido,
+        })),
+      };
+
+      // 2. Avisa o Java para gerar o link de pagamento do Mercado Pago
       const response = await fetch(
         "https://threed-printing-api-fv1h.onrender.com/api/checkout/pagar",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          // Nota: Futuramente enviaremos o 'carrinho' aqui no body para calcular o valor dinâmico.
-          // Por enquanto, o Java vai gerar aquele link de teste de R$ 150,00 que configuramos.
+          // A MÁGICA ACONTECE AQUI: Adicionamos o body (corpo) da requisição!
+          body: JSON.stringify(pacotePedido),
         },
       );
 
       const data = await response.json();
 
-      // 2. Se o Java devolver a URL oficial do Mercado Pago...
+      // 3. Se o Java devolver a URL oficial do Mercado Pago...
       if (data.url) {
         // Limpa o carrinho local pois o cliente já vai para o pagamento
         setCarrinho([]);
         localStorage.removeItem("carrinhoEcommerce");
 
-        // 3. A MÁGICA: Redireciona a aba do cliente para o ambiente seguro do Mercado Pago!
+        // Redireciona a aba do cliente para o ambiente seguro do Mercado Pago
         window.location.href = data.url;
       } else {
         alert("Erro ao gerar link de pagamento no Mercado Pago.");
