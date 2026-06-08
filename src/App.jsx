@@ -109,51 +109,42 @@ function App() {
     0,
   );
 
-  const finalizarCompra = async () => {
+  const finalizarCompra = () => {
     if (carrinho.length === 0) {
       alert("Seu carrinho está vazio!");
       return;
     }
 
-    try {
-      // 1. Empacota os dados EXATAMENTE como as classes Pedido.java e ItemPedido.java exigem
-      const pacotePedido = {
-        total: valorTotal,
-        itens: carrinho.map((item) => ({
-          produto: { id: item.id },
-          quantidade: item.quantidade,
-          precoUnitario: item.precoVenda, // <-- NOME CORRIGIDO AQUI!
-        })),
-      };
+    // Coloque o seu número real aqui.
+    // Formato: 55 (Brasil) + DDD + Número.
+    const numeroWhatsApp = "5549984134646";
 
-      // 2. Avisa o Java para gerar o link de pagamento do Mercado Pago
-      const response = await fetch(
-        "https://threed-printing-api-fv1h.onrender.com/api/checkout/pagar",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          // A MÁGICA ACONTECE AQUI: Adicionamos o body (corpo) da requisição!
-          body: JSON.stringify(pacotePedido),
-        },
-      );
+    // 1. Monta o cabeçalho da mensagem
+    let textoMensagem =
+      "Olá! Gostaria de fazer uma encomenda da loja de impressão 3D:\n\n";
 
-      const data = await response.json();
+    // 2. Varre o carrinho e lista os itens um por um
+    carrinho.forEach((item) => {
+      textoMensagem += `▪️ ${item.quantidade}x ${item.nome} (${item.materialEscolhido}) - R$ ${(item.precoVenda * item.quantidade).toFixed(2)}\n`;
+    });
 
-      // 3. Se o Java devolver a URL oficial do Mercado Pago...
-      if (data.url) {
-        // Limpa o carrinho local pois o cliente já vai para o pagamento
-        setCarrinho([]);
-        localStorage.removeItem("carrinhoEcommerce");
+    // 3. Adiciona o total e o rodapé
+    textoMensagem += `\n*Valor Total: R$ ${valorTotal.toFixed(2)}*`;
+    textoMensagem +=
+      "\n\nAguardo retorno para combinarmos o pagamento e a entrega!";
 
-        // Redireciona a aba do cliente para o ambiente seguro do Mercado Pago
-        window.location.href = data.url;
-      } else {
-        alert("Erro ao gerar link de pagamento no Mercado Pago.");
-      }
-    } catch (error) {
-      console.error("Erro ao conectar com a API de Checkout:", error);
-      alert("Servidor de pagamentos indisponível no momento.");
-    }
+    // 4. Converte o texto para o formato seguro de links da internet (transforma espaços, quebras de linha, etc)
+    const textoCodificado = encodeURIComponent(textoMensagem);
+
+    // 5. Gera a URL oficial da API do WhatsApp
+    const linkWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${textoCodificado}`;
+
+    // 6. Limpa o carrinho da tela e do cache do navegador
+    setCarrinho([]);
+    localStorage.removeItem("carrinhoEcommerce");
+
+    // 7. Abre o WhatsApp do cliente em uma nova aba já com a mensagem digitada!
+    window.open(linkWhatsApp, "_blank");
   };
 
   // O componente interno que representa a Vitrine
