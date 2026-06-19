@@ -1,105 +1,143 @@
+/* --- CONFIGURAÇÕES GERAIS E FONTE --- */
+body {
+  background-color: #121212; /* Fundo escuro premium para o site */
+  margin: 0;
+  padding: 0;
+  color: #e0e0e0;
+}
+
 #root {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1.5rem;
   text-align: center;
-  font-family: Arial, sans-serif;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
+/* --- CABEÇALHO --- */
 .cabecalho {
-  margin-bottom: 3rem;
+  margin-bottom: 2.5rem;
+  padding: 20px 10px;
 }
 
-/* Cria um grid responsivo que se adapta ao tamanho da tela */
+.cabecalho h1 {
+  color: #ffffff;
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.cabecalho p {
+  color: #aaa;
+  margin: 0;
+}
+
+/* --- VITRINE RESPONSIVA (A Mágica do Grid) --- */
 .vitrine {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  /* Cria colunas automáticas: se estiver no celular vira 1 coluna, no PC divide sozinho */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2rem;
+  padding: 10px 0;
 }
 
+/* --- CARD DOS PRODUTOS --- */
 .card-produto {
-  background-color: #f9f9f9;
-  border-radius: 8px;
+  background-color: #ffffff; /* Fundo branco para destacar bem o produto */
+  border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
-  color: #333;
+  color: #222222; /* Texto escuro dentro do card claro */
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* Efeito flutuante elegante ao passar o mouse */
+.card-produto:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.produto-imagem {
+  width: 100%;
+  height: 240px;
+  object-fit: cover; /* Recorta a imagem proporcionalmente sem distorcer */
+  border-radius: 8px;
+  margin-bottom: 15px;
+  background-color: #eee;
 }
 
 .card-produto h2 {
   margin-top: 0;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
+  font-weight: bold;
 }
 
 .descricao {
-  flex-grow: 1;
-  color: #666;
+  flex-grow: 1; /* Força os botões a ficarem todos alinhados embaixo */
+  color: #555555;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
 }
 
 .detalhes-tecnicos {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 8px;
   font-size: 0.85rem;
-  background: #e1e1e1;
-  padding: 0.5rem;
-  border-radius: 4px;
+  background: #f1f1f1;
+  padding: 0.75rem;
+  border-radius: 6px;
   margin: 1rem 0;
+  text-align: left;
 }
 
 .preco {
-  font-size: 1.8rem;
-  color: #2c3e50;
+  font-size: 1.7rem;
+  color: #1a1a1a;
+  font-weight: bold;
   margin: 1rem 0;
 }
 
+/* --- BOTÕES --- */
 .btn-comprar {
   background-color: #4caf50;
   color: white;
   border: none;
-  padding: 10px;
+  padding: 12px;
   font-size: 1rem;
-  border-radius: 4px;
+  font-weight: bold;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background 0.2s;
+  width: 100%;
 }
 
 .btn-comprar:hover {
   background-color: #45a049;
 }
 
-.resumo-carrinho {
-  background-color: #2c3e50;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
-  display: inline-block;
-  margin-top: 15px;
-  font-weight: bold;
-}
-
-.resumo-carrinho {
-  /* ... mantenha o que já tem, e adicione isso se precisar alinhar: */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-}
-
 .btn-finalizar {
   background-color: #f39c12;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 10px 20px;
+  border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
   font-size: 1rem;
-  transition: background 0.3s;
+  transition: background 0.2s;
 }
 
-.btn-finalizar:hover {
+.btn-finalizar:hover:not(:disabled) {
   background-color: #e67e22;
+}
+
+.btn-finalizar:disabled {
+  background-color: #555555;
+  cursor: not-allowed;
 }
 
 .btn-voltar {
@@ -114,26 +152,54 @@
   text-decoration: underline;
 }
 
+/* --- CONTAINER DO CARRINHO (Unificado) --- */
+.resumo-carrinho {
+  background-color: #1e1e1e;
+  border: 1px solid #333333;
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 15px;
+  font-weight: bold;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Inputs de identificação dentro do carrinho */
+.resumo-carrinho input {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+.resumo-carrinho input:focus {
+  border-color: #4caf50;
+  outline: none;
+}
+
+/* --- TELA DE MEUS PEDIDOS --- */
 .card-pedido {
-  background-color: #fdfdfd;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  background-color: #1e1e1e;
+  border: 1px solid #333333;
+  border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   text-align: left;
+  color: #ffffff;
 }
 
 .pedido-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #333333;
   padding-bottom: 10px;
   margin-bottom: 10px;
 }
 
 .status-badge {
-  padding: 5px 10px;
+  padding: 5px 12px;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: bold;
@@ -144,26 +210,21 @@
   color: #fff;
 }
 
-.produto-imagem {
-  width: 100%;
-  height: 250px;
-  object-fit: cover; /* Faz a imagem preencher o espaço sem distorcer */
-  border-radius: 8px; /* Arredonda as bordas para combinar com o card */
-  margin-bottom: 15px;
-  background-color: #eee; /* Cor de fundo caso a imagem demore a carregar */
-}
-
+/* --- PAINEL EXCLUSIVO DO ADMIN --- */
 .painel-admin {
-  background-color: #e8f5e9;
-  border: 1px dashed #2e7d32;
-  border-radius: 4px;
-  padding: 5px;
+  background-color: #1a231a;
+  border: 1px dashed #4caf50;
+  border-radius: 6px;
+  padding: 10px;
   margin-bottom: 15px;
-  color: #2e7d32;
+  color: #81c784;
   font-weight: bold;
+  text-align: center;
 }
 
 .painel-admin small {
-  color: #666;
+  color: #b0bec5;
   font-weight: normal;
+  display: block;
+  margin-top: 2px;
 }
