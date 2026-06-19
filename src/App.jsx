@@ -400,8 +400,10 @@ function App() {
                   className="produto-imagem"
                 />
               )}
-              <h2>{produto.nome}</h2>
-              <p className="descricao">{produto.descricao}</p>
+              <h2 style={{ color: "#222" }}>{produto.nome}</h2>
+              <p className="descricao" style={{ color: "#555" }}>
+                {produto.descricao}
+              </p>
               <div
                 className="detalhes-tecnicos"
                 style={{
