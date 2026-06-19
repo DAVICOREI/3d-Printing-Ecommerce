@@ -433,7 +433,7 @@ function App() {
                       padding: "5px",
                       borderRadius: "5px",
                       backgroundColor: "#333",
-                      color: "#fff",
+                      color: "#271818",
                       border: "1px solid #555",
                       cursor: "pointer",
                     }}
