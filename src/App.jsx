@@ -504,7 +504,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Vitrine />} />
+        <Route path="/" element={Vitrine()} />
         <Route path="/pedidos" element={<MeusPedidos />} />
         <Route path="/login" element={<Login />} />
 
