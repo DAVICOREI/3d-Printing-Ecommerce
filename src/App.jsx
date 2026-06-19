@@ -15,6 +15,9 @@ function App() {
     setMaterialSelecionado({ ...materialSelecionado, [produtoId]: material });
   };
   const [produtos, setProdutos] = useState([]);
+  const [nomeCliente, setNomeCliente] = useState("");
+  const [cepCliente, setCepCliente] = useState("");
+  const [valorFrete, setValorFrete] = useState(0);
   const [carrinho, setCarrinho] = useState(() => {
     const carrinhoSalvo = localStorage.getItem("carrinhoEcommerce");
     return carrinhoSalvo ? JSON.parse(carrinhoSalvo) : [];
@@ -60,6 +63,25 @@ function App() {
         ...carrinho,
         { ...produto, cartItemId, materialEscolhido: escolhido, quantidade: 1 },
       ]);
+    }
+  };
+
+  // Função ativada quando o cliente digita o CEP
+  const handleCepChange = (e) => {
+    const cepDigitado = e.target.value.replace(/\D/g, ""); // Remove letras e traços
+    setCepCliente(cepDigitado);
+
+    // Se o CEP tiver 8 números, calculamos o frete
+    if (cepDigitado.length === 8) {
+      // Exemplo de regra: CEPs começando com 899 (Região de SMO/SC) pagam frete fixo de R$ 15
+      if (cepDigitado.startsWith("899")) {
+        setValorFrete(15.0);
+      } else {
+        // Resto do Brasil
+        setValorFrete(35.0);
+      }
+    } else {
+      setValorFrete(0); // Zera o frete se o CEP estiver incompleto
     }
   };
 
@@ -115,41 +137,120 @@ function App() {
       return;
     }
 
-    // Coloque o seu número real aqui.
-    // Formato: 55 (Brasil) + DDD + Número.
+    // Trava de segurança: obriga o cliente a se identificar e colocar um CEP válido
+    if (!nomeCliente.trim() || cepCliente.length !== 8) {
+      alert(
+        "Por favor, preencha o seu nome e um CEP válido com 8 dígitos para calcularmos o frete.",
+      );
+      return;
+    }
+
     const numeroWhatsApp = "5549984134646";
 
-    // 1. Monta o cabeçalho da mensagem
-    let textoMensagem =
-      "Olá! Gostaria de fazer uma encomenda da loja de impressão 3D:\n\n";
+    // Calcula o Total com o Frete embutido
+    const totalComFrete = valorTotal + valorFrete;
+
+    // 1. Monta o cabeçalho da mensagem com a identificação do cliente
+    let textoMensagem = `Olá! Meu nome é *${nomeCliente}* e gostaria de fazer uma encomenda (CEP: ${cepCliente}):\n\n`;
 
     // 2. Varre o carrinho e lista os itens um por um
     carrinho.forEach((item) => {
       textoMensagem += `▪️ ${item.quantidade}x ${item.nome} (${item.materialEscolhido}) - R$ ${(item.precoVenda * item.quantidade).toFixed(2)}\n`;
     });
 
-    // 3. Adiciona o total e o rodapé
-    textoMensagem += `\n*Valor Total: R$ ${valorTotal.toFixed(2)}*`;
+    // 3. Adiciona o subtotal, frete, total geral e o rodapé
+    textoMensagem += `\n📦 Subtotal: R$ ${valorTotal.toFixed(2)}`;
+    textoMensagem += `\n🚚 Frete: R$ ${valorFrete.toFixed(2)}`;
+    textoMensagem += `\n*💰 Valor Total: R$ ${totalComFrete.toFixed(2)}*`;
     textoMensagem +=
       "\n\nAguardo retorno para combinarmos o pagamento e a entrega!";
 
-    // 4. Converte o texto para o formato seguro de links da internet (transforma espaços, quebras de linha, etc)
+    // 4. Converte o texto para a URL
     const textoCodificado = encodeURIComponent(textoMensagem);
-
-    // 5. Gera a URL oficial da API do WhatsApp
     const linkWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${textoCodificado}`;
 
-    // 6. Limpa o carrinho da tela e do cache do navegador
+    // 5. Limpa os dados
     setCarrinho([]);
+    setNomeCliente("");
+    setCepCliente("");
+    setValorFrete(0);
     localStorage.removeItem("carrinhoEcommerce");
 
-    // 7. Abre o WhatsApp do cliente em uma nova aba já com a mensagem digitada!
+    // 6. Abre o WhatsApp
     window.open(linkWhatsApp, "_blank");
   };
 
   // O componente interno que representa a Vitrine
   const Vitrine = () => (
     <div className="container">
+      {/* --- FORMULÁRIO DE IDENTIFICAÇÃO E FRETE --- */}
+      {carrinho.length > 0 && (
+        <div
+          style={{
+            marginTop: "15px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            backgroundColor: "#1e1e1e",
+            padding: "15px",
+            borderRadius: "8px",
+            border: "1px solid #333",
+          }}
+        >
+          <h3 style={{ margin: "0 0 5px 0", fontSize: "16px" }}>Seus Dados:</h3>
+          <input
+            type="text"
+            placeholder="Seu Nome Completo"
+            value={nomeCliente}
+            onChange={(e) => setNomeCliente(e.target.value)}
+            style={{
+              padding: "10px",
+              borderRadius: "4px",
+              border: "none",
+              backgroundColor: "#333",
+              color: "#fff",
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Seu CEP (Apenas números)"
+            value={cepCliente}
+            onChange={handleCepChange}
+            maxLength="8"
+            style={{
+              padding: "10px",
+              borderRadius: "4px",
+              border: "none",
+              backgroundColor: "#333",
+              color: "#fff",
+            }}
+          />
+
+          {/* Mostra o valor do frete apenas quando o CEP for validado (8 dígitos) */}
+          {valorFrete > 0 ? (
+            <p
+              style={{
+                color: "#4caf50",
+                fontWeight: "bold",
+                margin: "5px 0 0 0",
+              }}
+            >
+              🚚 Frete Calculado: R$ {valorFrete.toFixed(2)}
+            </p>
+          ) : cepCliente.length === 8 ? (
+            <p
+              style={{
+                color: "#4caf50",
+                fontWeight: "bold",
+                margin: "5px 0 0 0",
+              }}
+            >
+              🚚 Frete Grátis!
+            </p>
+          ) : null}
+        </div>
+      )}
+      {/* ------------------------------------------- */}
       <header className="cabecalho">
         <h1>Loja de Decoração 3D</h1>
         <p>Peças exclusivas fabricadas sob demanda</p>
