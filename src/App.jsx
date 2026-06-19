@@ -447,7 +447,10 @@ function App() {
                   </select>
                 </label>
 
-                <span>⏱️ {produto.tempoImpressaoHoras}h de impressão</span>
+                {/* Exibe o tempo de impressão SOMENTE se for Admin */}
+                {isAdmin && (
+                  <span>⏱️ {produto.tempoImpressaoHoras}h de impressão</span>
+                )}
               </div>
               <h3 className="preco">R$ {produto.precoVenda.toFixed(2)}</h3>
               {isAdmin && (
