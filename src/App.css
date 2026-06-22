@@ -1,3 +1,4 @@
+/* --- CONFIGURAÇÕES GERAIS E FONTE --- */
 * {
   box-sizing: border-box;
 }
@@ -5,11 +6,8 @@
 html,
 body {
   max-width: 100vw;
-  overflow-x: hidden; /* Mata o espaço vazio do lado */
-}
-/* --- CONFIGURAÇÕES GERAIS E FONTE --- */
-body {
-  background-color: #121212; /* Fundo escuro premium para o site */
+  overflow-x: hidden; /* Previne a quebra de tela no celular */
+  background-color: #0a0a0a; /* Preto profundo para destacar o ouro */
   margin: 0;
   padding: 0;
   color: #e0e0e0;
@@ -19,7 +17,7 @@ body {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1rem; /* Diminuímos de 1.5rem para sobrar mais espaço no celular */
+  padding: 1rem;
   text-align: center;
   font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
@@ -30,21 +28,14 @@ body {
   padding: 20px 10px;
 }
 
-.cabecalho h1 {
-  color: #ffffff;
-  font-size: 2.2rem;
-  margin-bottom: 0.5rem;
-}
-
 .cabecalho p {
   color: #aaa;
   margin: 0;
 }
 
-/* --- VITRINE RESPONSIVA (A Mágica do Grid) --- */
+/* --- VITRINE RESPONSIVA --- */
 .vitrine {
   display: grid;
-  /* Cria colunas automáticas: se estiver no celular vira 1 coluna, no PC divide sozinho */
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2rem;
   padding: 10px 0;
@@ -52,28 +43,28 @@ body {
 
 /* --- CARD DOS PRODUTOS --- */
 .card-produto {
-  background-color: #ffffff; /* Fundo branco para destacar bem o produto */
+  background-color: #ffffff;
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
-  color: #222222; /* Texto escuro dentro do card claro */
+  color: #222222;
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
 }
 
-/* Efeito flutuante elegante ao passar o mouse */
+/* Efeito flutuante com brilho levemente dourado */
 .card-produto:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.15);
 }
 
 .produto-imagem {
   width: 100%;
   height: 240px;
-  object-fit: cover; /* Recorta a imagem proporcionalmente sem distorcer */
+  object-fit: cover;
   border-radius: 8px;
   margin-bottom: 15px;
   background-color: #eee;
@@ -83,10 +74,11 @@ body {
   margin-top: 0;
   font-size: 1.4rem;
   font-weight: bold;
+  color: #111;
 }
 
 .descricao {
-  flex-grow: 1; /* Força os botões a ficarem todos alinhados embaixo */
+  flex-grow: 1;
   color: #555555;
   font-size: 0.95rem;
   margin-bottom: 1rem;
@@ -111,49 +103,41 @@ body {
   margin: 1rem 0;
 }
 
-/* --- BOTÕES --- */
-.btn-comprar {
-  background-color: #4caf50;
-  color: white;
+/* --- BOTÕES PREMIUM (DOURADO) --- */
+.btn-comprar,
+.btn-finalizar {
+  background: linear-gradient(135deg, #d4af37 0%, #aa8222 100%);
+  color: #121212; /* Texto escuro para contraste */
   border: none;
   padding: 12px;
   font-size: 1rem;
   font-weight: bold;
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
   width: 100%;
+  text-transform: uppercase;
 }
 
-.btn-comprar:hover {
-  background-color: #45a049;
-}
-
-.btn-finalizar {
-  background-color: #f39c12;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 1rem;
-  transition: background 0.2s;
-}
-
+.btn-comprar:hover:not(:disabled),
 .btn-finalizar:hover:not(:disabled) {
-  background-color: #e67e22;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
 }
 
 .btn-finalizar:disabled {
-  background-color: #555555;
+  background: #333333;
+  color: #777;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .btn-voltar {
   display: inline-block;
   margin-top: 15px;
-  color: #3498db;
+  color: #d4af37;
   text-decoration: none;
   font-weight: bold;
 }
@@ -162,9 +146,9 @@ body {
   text-decoration: underline;
 }
 
-/* --- CONTAINER DO CARRINHO (Unificado) --- */
+/* --- CONTAINER DO CARRINHO --- */
 .resumo-carrinho {
-  background-color: #1e1e1e;
+  background-color: #121212;
   border: 1px solid #333333;
   color: white;
   padding: 20px;
@@ -175,7 +159,6 @@ body {
   box-sizing: border-box;
 }
 
-/* Inputs de identificação dentro do carrinho */
 .resumo-carrinho input {
   width: 100%;
   box-sizing: border-box;
@@ -183,14 +166,15 @@ body {
   transition: border-color 0.2s;
 }
 
+/* Borda dourada ao clicar para digitar */
 .resumo-carrinho input:focus {
-  border-color: #4caf50;
+  border-color: #d4af37;
   outline: none;
 }
 
 /* --- TELA DE MEUS PEDIDOS --- */
 .card-pedido {
-  background-color: #1e1e1e;
+  background-color: #121212;
   border: 1px solid #333333;
   border-radius: 12px;
   padding: 1.5rem;
@@ -216,18 +200,18 @@ body {
 }
 
 .status-badge.pendente {
-  background-color: #f1c40f;
-  color: #fff;
+  background-color: #d4af37;
+  color: #121212;
 }
 
 /* --- PAINEL EXCLUSIVO DO ADMIN --- */
 .painel-admin {
-  background-color: #1a231a;
-  border: 1px dashed #4caf50;
+  background-color: #1a1a1a;
+  border: 1px dashed #d4af37;
   border-radius: 6px;
   padding: 10px;
   margin-bottom: 15px;
-  color: #81c784;
+  color: #d4af37;
   font-weight: bold;
   text-align: center;
 }

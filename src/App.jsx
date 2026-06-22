@@ -158,8 +158,19 @@ function App() {
   const Vitrine = () => (
     <div className="container">
       <header className="cabecalho">
-        <h1>Loja de Decoração 3D</h1>
-        <p>Peças exclusivas fabricadas sob demanda</p>
+        {/* Adiciona a imagem da logo centralizada */}
+        <img
+          src="/logo.png"
+          alt="Davi Ribeiro 3Decor"
+          style={{
+            width: "180px",
+            borderRadius: "50%",
+            marginBottom: "15px",
+            boxShadow: "0 4px 15px rgba(212, 175, 55, 0.2)",
+          }}
+        />
+        <h1 style={{ color: "#d4af37" }}>Davi Ribeiro 3Decor</h1>
+        <p>Impressão 3D e Arte | Peças exclusivas sob demanda</p>
 
         {/* Resumo do Carrinho e Formulário agrupados */}
         <div
