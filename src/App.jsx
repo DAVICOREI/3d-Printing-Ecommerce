@@ -164,6 +164,8 @@ function App() {
           alt="Davi Ribeiro 3Decor"
           style={{
             width: "180px",
+            height: "180px" /* Trava a altura igual à largura */,
+            objectFit: "cover" /* Corta as sobras sem amassar a imagem */,
             borderRadius: "50%",
             marginBottom: "15px",
             boxShadow: "0 4px 15px rgba(212, 175, 55, 0.2)",
