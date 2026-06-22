@@ -1,3 +1,12 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden; /* Mata o espaço vazio do lado */
+}
 /* --- CONFIGURAÇÕES GERAIS E FONTE --- */
 body {
   background-color: #121212; /* Fundo escuro premium para o site */
@@ -7,9 +16,10 @@ body {
 }
 
 #root {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1rem; /* Diminuímos de 1.5rem para sobrar mais espaço no celular */
   text-align: center;
   font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
