@@ -5,6 +5,7 @@ import Admin from "./pages/Admin";
 import "./App.css";
 import Login from "./pages/Login";
 import ProtectedRoute from "./Components/ProtectedRoute";
+import minhaLogo from "./logo.png";
 
 function App() {
   const isAdmin = localStorage.getItem("tokenAdmin") !== null;
@@ -160,12 +161,12 @@ function App() {
       <header className="cabecalho">
         {/* Adiciona a imagem da logo centralizada */}
         <img
-          src="/logo.png"
+          src={minhaLogo}
           alt="Davi Ribeiro 3Decor"
           style={{
             width: "180px",
-            height: "180px" /* Trava a altura igual à largura */,
-            objectFit: "cover" /* Corta as sobras sem amassar a imagem */,
+            height: "180px",
+            objectFit: "cover",
             borderRadius: "50%",
             marginBottom: "15px",
             boxShadow: "0 4px 15px rgba(212, 175, 55, 0.2)",
