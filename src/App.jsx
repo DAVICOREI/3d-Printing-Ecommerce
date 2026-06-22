@@ -5,7 +5,7 @@ import Admin from "./pages/Admin";
 import "./App.css";
 import Login from "./pages/Login";
 import ProtectedRoute from "./Components/ProtectedRoute";
-import minhaLogo from "./logo.png";
+import minhaLogo from "./assets/logo.png";
 
 function App() {
   const isAdmin = localStorage.getItem("tokenAdmin") !== null;
