@@ -2,9 +2,22 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 function Admin() {
-  const navigate = useNavigate(); // <-- Inicializa o hook de navegação
+  const navigate = useNavigate();
 
   const [pedidosFila, setPedidosFila] = useState([]);
+
+  // --- NOVOS ESTADOS PARA A FILA DE ESPERA MANUAL ---
+  const [nomeClienteFila, setNomeClienteFila] = useState("");
+  const [descricaoPedidoFila, setDescricaoPedidoFila] = useState("");
+  const [filaEspera, setFilaEspera] = useState(() => {
+    const filaSalva = localStorage.getItem("filaFabrica3D");
+    return filaSalva ? JSON.parse(filaSalva) : [];
+  });
+
+  // Salva a fila manual automaticamente sempre que houver alterações
+  useEffect(() => {
+    localStorage.setItem("filaFabrica3D", JSON.stringify(filaEspera));
+  }, [filaEspera]);
 
   useEffect(() => {
     const buscarFila = async () => {
@@ -29,7 +42,6 @@ function Admin() {
     buscarFila();
   }, []);
 
-  // Função que apaga o token e chuta o usuário para a vitrine
   const handleLogout = () => {
     localStorage.removeItem("tokenAdmin");
     navigate("/");
@@ -38,7 +50,7 @@ function Admin() {
   const [produto, setProduto] = useState({
     nome: "",
     descricao: "",
-    material: [], // <-- Agora é uma lista (Array) vazia
+    material: [],
     tempoImpressaoHoras: "",
     pesoGramas: "",
     precoVenda: "",
@@ -50,36 +62,64 @@ function Admin() {
     setProduto({ ...produto, [name]: value });
   };
 
-  // Função para gerenciar os checkboxes de material
   const handleCheckboxChange = (e) => {
     const { value, checked } = e.target;
     let novosMateriais = [...produto.material];
 
     if (checked) {
-      novosMateriais.push(value); // Adiciona na lista se marcou
+      novosMateriais.push(value);
     } else {
-      novosMateriais = novosMateriais.filter((mat) => mat !== value); // Tira da lista se desmarcou
+      novosMateriais = novosMateriais.filter((mat) => mat !== value);
     }
 
     setProduto({ ...produto, material: novosMateriais });
   };
 
   // --- REGRA DE NEGÓCIO DA IMPRESSÃO 3D ---
-
-  // 1. Custo do Material (PLA a R$ 130/kg)
   const precoPorGrama = 130 / 1000;
   const custoMaterial = Number(produto.pesoGramas) * precoPorGrama;
 
-  // 2. Custo de Tempo de Máquina (Energia + Desgaste = ~R$ 1.50/hora)
   const custoPorHora = 1.5;
   const custoTempo = Number(produto.tempoImpressaoHoras) * custoPorHora;
 
-  // 3. Custo Total de Produção
   const custoProducaoCalculado = custoMaterial + custoTempo;
-
-  // 4. Margem de Lucro
   const lucroEstimadoCalculado =
     Number(produto.precoVenda) - custoProducaoCalculado;
+
+  // --- FUNÇÕES DA FILA DE ESPERA MANUAL ---
+  const adicionarNaFila = () => {
+    if (!nomeClienteFila.trim() || !descricaoPedidoFila.trim()) {
+      alert("Por favor, preencha o nome do cliente e a descrição das peças.");
+      return;
+    }
+
+    const novoPedido = {
+      id: Date.now(),
+      cliente: nomeClienteFila,
+      descricao: descricaoPedidoFila,
+      data:
+        new Date().toLocaleDateString("pt-BR") +
+        " às " +
+        new Date().toLocaleTimeString("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+    };
+
+    setFilaEspera([...filaEspera, novoPedido]);
+    setNomeClienteFila("");
+    setDescricaoPedidoFila("");
+  };
+
+  const concluirPedidoFila = (id) => {
+    if (
+      window.confirm(
+        "Peça totalmente impressa? Deseja remover este pedido da fábrica?",
+      )
+    ) {
+      setFilaEspera(filaEspera.filter((pedido) => pedido.id !== id));
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -96,7 +136,6 @@ function Admin() {
           body: JSON.stringify({
             nome: produto.nome,
             descricao: produto.descricao,
-            // Transforma a lista ["PLA", "ABS"] no texto "PLA, ABS" para o Java
             material: produto.material.join(", "),
             tempoImpressaoHoras: Number(produto.tempoImpressaoHoras),
             precoVenda: Number(produto.precoVenda),
@@ -108,7 +147,6 @@ function Admin() {
 
       if (response.ok) {
         alert("🎉 Produto cadastrado com sucesso!");
-        // Limpa o formulário garantindo que o material volte a ser uma lista vazia
         setProduto({
           nome: "",
           descricao: "",
@@ -131,7 +169,7 @@ function Admin() {
       className="container"
       style={{ padding: "20px", maxWidth: "600px", margin: "0 auto" }}
     >
-      <header style={{ marginBottom: "20px" }}>
+      <header style={{ marginBottom: "30px", position: "relative" }}>
         <div
           style={{
             display: "flex",
@@ -139,66 +177,130 @@ function Admin() {
             alignItems: "center",
           }}
         >
-          <Link to="/" style={{ color: "#fff", textDecoration: "none" }}>
+          <Link
+            to="/"
+            style={{
+              color: "#fff",
+              textDecoration: "none",
+              fontWeight: "bold",
+            }}
+          >
             ← Voltar para a Vitrine
           </Link>
 
-          {/* Botão de Logout */}
           <button
             onClick={handleLogout}
             style={{
               backgroundColor: "transparent",
               border: "1px solid #f44336",
               color: "#f44336",
-              padding: "5px 15px",
+              padding: "6px 15px",
               borderRadius: "5px",
               cursor: "pointer",
+              fontWeight: "bold",
             }}
           >
             Sair 🔒
           </button>
         </div>
 
-        <h1 style={{ marginTop: "15px" }}>Painel do Administrador</h1>
-        <p>Cadastre novos modelos com cálculo automático de custo</p>
+        {/* Adicionado line-height e isolamento para matar o bug de sobreposição visual */}
+        <h1
+          style={{
+            marginTop: "25px",
+            marginBottom: "5px",
+            fontSize: "2.2rem",
+            lineHeight: "1.2",
+            color: "#fff",
+          }}
+        >
+          Painel do Administrador
+        </h1>
+        <p style={{ margin: "0", color: "#aaa" }}>
+          Cadastre novos modelos com cálculo automático de custo
+        </p>
       </header>
 
       <form
         onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column", gap: "15px" }}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "15px",
+          textAlign: "left",
+        }}
       >
-        <label>
+        <label
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "5px",
+            color: "#fff",
+          }}
+        >
           Nome do Produto:
           <input
             type="text"
             name="nome"
             value={produto.nome}
             onChange={handleChange}
+            style={{
+              padding: "10px",
+              borderRadius: "6px",
+              border: "1px solid #444",
+              backgroundColor: "#222",
+              color: "#fff",
+            }}
             required
           />
         </label>
 
-        <label>
+        <label
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "5px",
+            color: "#fff",
+          }}
+        >
           Descrição:
           <textarea
             name="descricao"
             value={produto.descricao}
             onChange={handleChange}
+            style={{
+              padding: "10px",
+              borderRadius: "6px",
+              border: "1px solid #444",
+              backgroundColor: "#222",
+              color: "#fff",
+              minHeight: "80px",
+            }}
             required
           />
         </label>
 
-        <div style={{ display: "flex", gap: "10px" }}>
-          <label style={{ flex: 1 }}>
+        <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
+          <label
+            style={{
+              flex: 1,
+              minWidth: "200px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "5px",
+              color: "#fff",
+            }}
+          >
             Materiais Disponíveis:
             <div
               style={{
                 display: "flex",
                 gap: "15px",
-                marginTop: "8px",
+                marginTop: "2px",
                 backgroundColor: "#2a2a2a",
                 padding: "10px",
-                borderRadius: "5px",
+                borderRadius: "6px",
+                border: "1px solid #444",
               }}
             >
               <label style={{ fontWeight: "normal", cursor: "pointer" }}>
@@ -231,20 +333,44 @@ function Admin() {
             </div>
           </label>
 
-          <label style={{ flex: 1 }}>
+          <label
+            style={{
+              flex: 1,
+              minWidth: "200px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "5px",
+              color: "#fff",
+            }}
+          >
             Tempo de Impressão (Horas):
             <input
               type="number"
               name="tempoImpressaoHoras"
               value={produto.tempoImpressaoHoras}
               onChange={handleChange}
+              style={{
+                padding: "10px",
+                borderRadius: "6px",
+                border: "1px solid #444",
+                backgroundColor: "#222",
+                color: "#fff",
+              }}
               required
             />
           </label>
         </div>
 
-        <div style={{ display: "flex", gap: "10px" }}>
-          <label style={{ flex: 1 }}>
+        <div style={{ display: "flex", gap: "15px" }}>
+          <label
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              gap: "5px",
+              color: "#fff",
+            }}
+          >
             Peso da Peça (Gramas):
             <input
               type="number"
@@ -252,11 +378,26 @@ function Admin() {
               value={produto.pesoGramas}
               onChange={handleChange}
               placeholder="ex: 250"
+              style={{
+                padding: "10px",
+                borderRadius: "6px",
+                border: "1px solid #444",
+                backgroundColor: "#222",
+                color: "#fff",
+              }}
               required
             />
           </label>
 
-          <label style={{ flex: 1 }}>
+          <label
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              gap: "5px",
+              color: "#fff",
+            }}
+          >
             Preço de Venda (R$):
             <input
               type="number"
@@ -264,12 +405,19 @@ function Admin() {
               name="precoVenda"
               value={produto.precoVenda}
               onChange={handleChange}
+              style={{
+                padding: "10px",
+                borderRadius: "6px",
+                border: "1px solid #444",
+                backgroundColor: "#222",
+                color: "#fff",
+              }}
               required
             />
           </label>
         </div>
 
-        {/* --- PAINEL DE FEEDBACK FINANCEIRO --- */}
+        {/* PAINEL DE FEEDBACK FINANCEIRO */}
         {(produto.pesoGramas || produto.tempoImpressaoHoras) && (
           <div
             style={{
@@ -282,7 +430,6 @@ function Admin() {
             <h4 style={{ margin: "0 0 10px 0", color: "#ff9800" }}>
               📊 Projeção de Custos
             </h4>
-
             <div
               style={{
                 display: "flex",
@@ -296,7 +443,6 @@ function Admin() {
               </p>
               <p style={{ margin: "2px 0" }}>R$ {custoMaterial.toFixed(2)}</p>
             </div>
-
             <div
               style={{
                 display: "flex",
@@ -310,18 +456,15 @@ function Admin() {
               </p>
               <p style={{ margin: "2px 0" }}>R$ {custoTempo.toFixed(2)}</p>
             </div>
-
             <hr style={{ borderColor: "#333", margin: "10px 0" }} />
-
-            <p style={{ margin: "5px 0", fontSize: "16px" }}>
+            <p style={{ margin: "5px 0", fontSize: "16px", color: "#fff" }}>
               ⚡ Custo Total de Produção:{" "}
               <strong style={{ color: "#f44336" }}>
                 R$ {custoProducaoCalculado.toFixed(2)}
               </strong>
             </p>
-
             {produto.precoVenda && (
-              <p style={{ margin: "5px 0", fontSize: "16px" }}>
+              <p style={{ margin: "5px 0", fontSize: "16px", color: "#fff" }}>
                 💰 Lucro Líquido:{" "}
                 <strong style={{ color: "#4caf50" }}>
                   R$ {lucroEstimadoCalculado.toFixed(2)}
@@ -331,7 +474,14 @@ function Admin() {
           </div>
         )}
 
-        <label>
+        <label
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "5px",
+            color: "#fff",
+          }}
+        >
           URL da Imagem:
           <input
             type="url"
@@ -339,6 +489,13 @@ function Admin() {
             value={produto.urlImagem}
             onChange={handleChange}
             placeholder="https://exemplo.com/imagem.jpg"
+            style={{
+              padding: "10px",
+              borderRadius: "6px",
+              border: "1px solid #444",
+              backgroundColor: "#222",
+              color: "#fff",
+            }}
           />
         </label>
 
@@ -351,106 +508,192 @@ function Admin() {
         </button>
       </form>
 
-      {/* --- SEÇÃO: FILA DE ESPERA DE ENCOMENDAS --- */}
+      {/* --- SEÇÃO COMPLETA: FILA DE ESPERA INTERATIVA DA FÁBRICA 3D --- */}
       <section
         style={{
-          marginTop: "40px",
+          marginTop: "45px",
           backgroundColor: "#1a1a1a",
           padding: "20px",
-          borderRadius: "10px",
+          borderRadius: "12px",
           border: "1px solid #333",
+          textAlign: "left",
         }}
       >
-        <h2 style={{ color: "#ff9800", marginBottom: "15px" }}>
+        <h2 style={{ color: "#ff9800", marginBottom: "5px", marginTop: "0" }}>
           🏭 Fila de Espera da Fábrica 3D
         </h2>
+        <p style={{ color: "#aaa", fontSize: "14px", margin: "0 0 20px 0" }}>
+          Gerencie os pedidos fechados manualmente no WhatsApp
+        </p>
 
-        {pedidosFila.length === 0 ? (
-          <p style={{ color: "#aaa" }}>
-            Nenhuma encomenda pendente no momento.
+        {/* Input de cadastro na fila */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            marginBottom: "25px",
+            backgroundColor: "#222",
+            padding: "15px",
+            borderRadius: "8px",
+            border: "1px solid #333",
+          }}
+        >
+          <h4 style={{ margin: "0", color: "#fff" }}>
+            Adicionar Nova Encomenda do WhatsApp:
+          </h4>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <input
+              type="text"
+              placeholder="Comprador (ex: Carlos Henrique)"
+              value={nomeClienteFila}
+              onChange={(e) => setNomeClienteFila(e.target.value)}
+              style={{
+                flex: 1,
+                minWidth: "180px",
+                padding: "10px",
+                borderRadius: "6px",
+                border: "1px solid #444",
+                backgroundColor: "#333",
+                color: "#fff",
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Peças e Material (ex: 1x Vaso Casal - PLA Vermelho)"
+              value={descricaoPedidoFila}
+              onChange={(e) => setDescricaoPedidoFila(e.target.value)}
+              style={{
+                flex: 2,
+                minWidth: "240px",
+                padding: "10px",
+                borderRadius: "6px",
+                border: "1px solid #444",
+                backgroundColor: "#333",
+                color: "#fff",
+              }}
+            />
+          </div>
+          <button
+            onClick={adicionarNaFila}
+            style={{
+              backgroundColor: "#ff9800",
+              color: "#000",
+              border: "none",
+              padding: "10px",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontWeight: "bold",
+              marginTop: "5px",
+            }}
+          >
+            + Inserir na Fila de Impressão
+          </button>
+        </div>
+
+        {/* Listagem dos pedidos ativos na Fila Manual */}
+        {filaEspera.length === 0 ? (
+          <p style={{ color: "#aaa", textAlign: "center", margin: "20px 0" }}>
+            Nenhum pedido manual na fila. Impressoras prontas!
           </p>
         ) : (
           <div
             style={{ display: "flex", flexDirection: "column", gap: "15px" }}
           >
-            {pedidosFila.map((pedido, index) => (
+            {filaEspera.map((pedido, idx) => (
               <div
                 key={pedido.id}
                 style={{
                   backgroundColor: "#222",
                   padding: "15px",
-                  borderRadius: "6px",
+                  borderRadius: "8px",
                   borderLeft: "5px solid #ff9800",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: "15px",
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "10px",
-                  }}
-                >
-                  <strong>
-                    # Posição na Fila: {index + 1} (Pedido ID: {pedido.id})
-                  </strong>
-                  <span
+                <div style={{ flex: 1 }}>
+                  <h3
                     style={{
-                      backgroundColor:
-                        pedido.status === "PENDENTE" ? "#ff9800" : "#4caf50",
-                      color: "#000",
-                      padding: "3px 8px",
-                      borderRadius: "3px",
-                      fontSize: "12px",
-                      fontWeight: "bold",
+                      margin: "0 0 4px 0",
+                      color: "#fff",
+                      fontSize: "1.1rem",
                     }}
                   >
-                    {pedido.status}
-                  </span>
+                    👤 {pedido.cliente}
+                  </h3>
+                  <p
+                    style={{
+                      margin: "0 0 6px 0",
+                      color: "#ccc",
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    📦 {pedido.descricao}
+                  </p>
+                  <small style={{ color: "#666" }}>
+                    Posição: #{idx + 1} | Registrado em: {pedido.data}
+                  </small>
                 </div>
-
-                <p style={{ margin: "5px 0", fontSize: "14px", color: "#aaa" }}>
-                  📅 Data da Compra:{" "}
-                  <strong>
-                    {new Date(pedido.dataPedido).toLocaleString("pt-BR")}
-                  </strong>
-                </p>
-
-                <p style={{ margin: "5px 0", fontSize: "14px", color: "#aaa" }}>
-                  💰 Valor Total:{" "}
-                  <strong>
-                    R$ {pedido.total ? pedido.total.toFixed(2) : "0.00"}
-                  </strong>
-                </p>
-
-                <div
+                <button
+                  onClick={() => concluirPedidoFila(pedido.id)}
                   style={{
-                    marginTop: "10px",
-                    backgroundColor: "#111",
-                    padding: "10px",
-                    borderRadius: "4px",
+                    backgroundColor: "transparent",
+                    border: "1px solid #4caf50",
+                    color: "#4caf50",
+                    padding: "8px 14px",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontWeight: "bold",
+                    fontSize: "0.9rem",
                   }}
                 >
-                  <span style={{ fontSize: "13px", color: "#888" }}>
-                    Peças a serem fabricadas:
-                  </span>
-                  {pedido.itens?.map((item, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        fontSize: "14px",
-                        marginTop: "5px",
-                      }}
-                    >
-                      <span>• {item.produto?.nome || "Produto Deletado"}</span>
-                      <span>Qtd: {item.quantidade}</span>
-                    </div>
-                  ))}
-                </div>
+                  ✔️ Concluir
+                </button>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Mantido o histórico antigo de pedidos automáticos do banco caso queira monitorar logs anteriores */}
+        {pedidosFila.length > 0 && (
+          <div
+            style={{
+              marginTop: "30px",
+              borderTop: "1px dashed #333",
+              paddingTop: "20px",
+            }}
+          >
+            <h4 style={{ color: "#888", margin: "0 0 15px 0" }}>
+              📜 Histórico de Pedidos Anteriores (API):
+            </h4>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "10px",
+                opacity: 0.6,
+              }}
+            >
+              {pedidosFila.map((p) => (
+                <div
+                  key={p.id}
+                  style={{
+                    fontSize: "13px",
+                    color: "#aaa",
+                    backgroundColor: "#111",
+                    padding: "10px",
+                    borderRadius: "6px",
+                  }}
+                >
+                  <span>
+                    Pedido #{p.id} - {p.status} - R$ {p.total?.toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </section>
